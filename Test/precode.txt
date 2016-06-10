@@ -1,0 +1,264 @@
+
+int main() {
+
+    Game game;
+    
+    while (!game.terminated()) {
+        // Handle inputs
+        game.handleInputs();
+        
+        // Update state
+        game.updateWorld();
+        
+        // Render
+        game.render();
+    }
+
+}
+
+const unsigned int RED = 0;
+const unsigned int BLUE = 1;
+
+class Ball {
+
+}
+
+enum PlayerState {
+    NONE,       // Par défaut
+    DOWN,       // Au sol
+    ASSISTING,  // Dans un ruck, maul, touche ou melee
+    TACKLER,    // Plaqueur
+    TACKLED,    // Plaqué
+    AIRBORNE,   // En l'air
+    INJURED     // Blessé
+};
+
+unsigned int NAM[] = {};
+unsigned int HEI[] = {};
+unsigned int WEI[] = {};
+unsigned int AGE[] = {};
+
+unsigned int MOV[] = {};
+unsigned int ACT[] = {};
+unsigned int FOR[] = {};
+unsigned int DEF[] = {};
+unsigned int DEX[] = {};
+unsigned int KIC[] = {};
+
+class Player {
+
+private :
+
+    // Characteristics relative to the person
+    std::string m_name;
+    unsigned int m_height;
+    unsigned int m_weight;
+    unsigned int m_age;
+    
+    // Characteristics relative to rugby skill
+    unsigned int m_movement;
+    unsigned int m_action;
+    unsigned int m_force;
+    unsigned int m_defence;
+    unsigned int m_dexterity;
+    unsigned int m_kicking;
+    
+    // Characteristics relative to ongoing game
+    unsigned int m_number;
+    unsigned int m_team;
+    sf::Vector2u m_position;
+    bool m_isSelected;
+    bool m_hasBall;
+    PlayerState m_state;
+    
+    // Characteristics for display purposes
+    sf::Sprite m_sprite;
+    sf::Text m_jersey;
+    
+public :
+
+    Player( const std::string & name, unsigned int height, unsigned int weight, unsigned int age,
+            unsigned int speed, unsigned int action,
+            unsigned int force, unsigned int defence, unsigned int dexterity, unsigned int kicking,
+            unsigned int number, unsigned int team, const sf::Texture & texture)
+    :m_name(name), m_height(height), m_weight(weight), m_age(age),
+     m_movement(speed), m_action(action),
+     m_force(force), m_defence(defence), m_dexterity(dexterity), m_kicking(kicking),
+     m_number(number), m_team(team), m_position(5+number, 5+2*team),
+     m_isSelected(false), m_hasBall(false), m_state(PlayerState::NONE),
+     m_sprite(texture), m_jersey(number) {
+    
+    }
+
+    ~Player() {}
+    
+    void draw(const Window & window) {
+        window.draw(m_sprite);
+        window.draw(m_jersey);
+    }
+};
+
+
+class Team {
+
+private :
+    
+    std::string m_name;
+    unsigned int m_color;
+    Player m_players[15];
+    
+    sf::Texture m_texTile;
+
+public :
+
+    Team(const std::string & name, unsigned int team)
+    :m_color(team) {
+        if (m_color == RED) {
+            if (!m_texTile.loadFromFile("assets/red.png")) {
+                //TODO
+            }
+        } else {
+            if (!m_texTile.loadFromFile("assets/blue.png")) {
+                //TODO
+            }
+        }
+        
+        for (int i=0; i<15; ++i) {
+            unsigned int index = i+(15*m_color) ;
+            m_players[i] = Player(  NAM[index], HEI[index], WEI[index], AGE[index],
+                                    MOV[index], ACT[index], 
+                                    FOR[index], DEF[index], DEX[index], KIC[index],
+                                    (i+1), m_color, m_texFile);
+        }
+    }
+
+    ~Team() {
+        //TODO
+    }
+    
+    void draw(const Window & window) {
+        for (auto it : m_players) {
+            it.draw(window);
+        }
+    }
+};
+
+class Game {
+
+private:
+    
+    static const unsigned int NB_TURNS = 30;
+    
+    Window m_window;
+    Textbox m_textbox;
+    sf::Texture m_texField;
+    sf::Sprite m_field;
+    
+    sf::Vector2u m_score;
+    unsigned int m_turns;
+    Team m_teams[2];
+    Ball m_ball;
+
+public:
+
+    Game()
+    :m_window("Rugby Union Tactics", sf::Vector2u(1866, 856), m_textbox(), m_score(0,0), m_turns(NB_TURNS),
+     m_teams{Team("Red", RED), Team("Blue", BLUE)} {
+        if (!m_texField.loadFromFile("assets/field.png")) {
+            //TODO
+        }
+        m_field.setTexture(m_texField);
+        m_field.setPosition();
+        
+    }
+    
+    ~Game() {}
+    
+    void handleInputs() {
+    
+    }
+    
+    void updateWorld() {
+        m_window.handleEvents();
+        
+        // Update world
+        // ...
+    }
+    
+    void render() {
+        m_window.clear();
+        
+        m_window.draw(m_field);
+        // draw teams
+        // draw misc. infos
+        // draw textbox
+        
+        m_window.render();
+    }
+    
+    Window & getWindow() {
+        return m_window;
+    }
+};
+
+
+
+class Window {
+
+private:
+
+    sf::RenderWindow m_sfWindow;
+    sf::Vector2u m_size;
+    std::string m_title;
+    bool m_terminated;
+    
+    void open() {
+        auto style = (sf::Style::Titlebar | sf::Style::Close);
+        m_sfWindow.create(sf::VideoMode(m_size.x, m_size.y), m_title, style);
+    }
+    
+    void close() {
+        m_sfWindow.close();
+    }
+
+public:
+
+    Window(const std::string & title, const sf::Vector2u & size)
+    :m_size(size), m_title(title), m_terminated(false) {
+        open();
+    }
+    
+    ~Window() {
+        close();
+    }
+    
+    void handleEvents() {
+        sf::Event event;
+        
+        while (m_sfWindow.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) {
+                m_terminated = true;
+            }
+        }
+    }
+    
+    void clear() {
+        m_sfWindow.clear(sf::Color::Black);
+    }
+    
+    void render() {
+        m_sfWindow.display();
+    }
+    
+    void draw(sf::Drawable & object) {
+        m_sfWindow.draw(object);
+    }
+    
+    bool isTerminated() const {
+        return m_terminated;
+    }
+    
+    sf::Vector2u getSize() const {
+        return m_size;
+    }
+};
