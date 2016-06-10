@@ -129,6 +129,8 @@ public:
 		sf::Vector2u t_pos = screenToGrid(sf::Vector2f(w_pos));
 		m_textbox.addDebugMessage("Click on (" + std::to_string(w_pos.x) + "," + std::to_string(w_pos.y) + ")");
 		m_textbox.addDebugMessage("Tile : (" + std::to_string(t_pos.x) + "," + std::to_string(t_pos.y) + ")");
+
+		// Do something
 	}
 
 	////////////////////////////////////////////////////////
