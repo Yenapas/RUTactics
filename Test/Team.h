@@ -50,6 +50,19 @@ public:
 		//TODO
 	}
 
+	bool selectPlayer(sf::Vector2u pos) {
+
+		for (auto & it : m_players) {
+			if (it.getPosition() == pos) {
+				for (auto & it2 : m_players)
+					it2.select(false);
+				it.select();
+				return true;
+			}
+		}
+		return false;
+	}
+
 	void draw(GraphicWindow & window) {
 		for (auto it : m_players) {
 			it.draw(window);

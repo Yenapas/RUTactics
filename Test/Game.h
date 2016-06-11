@@ -8,6 +8,9 @@
 #include "globals.h"
 
 #include "GraphicWindow.h"
+#include "ClickButton.h"
+
+using Buttons = std::vector<ClickButton>;
 
 class Game
 {
@@ -20,11 +23,13 @@ private:
 	Textbox m_textbox;
 	sf::Texture m_texField;
 	sf::Sprite m_field;
+	Buttons m_buttons;
 
 	sf::Vector2u m_score;
 	unsigned int m_turns;
 	Team m_team_red;
 	Team m_team_blue;
+	Team * m_activeTeam;
 	Ball m_ball;
 
 	//////////////////////////////////
@@ -37,7 +42,9 @@ private:
 public:
 
 	Game()
-		:m_window("Rugby Union Tactics", sf::Vector2u(1856, 866)), m_textbox(sf::Vector2f(1651.f,5.f), sf::Vector2f(200.f, 17*10+10), 100, 14), m_score(0,0), m_turns(NB_TURNS), m_team_red("Red", RED), m_team_blue("Blue", BLUE), m_debug(false) {
+		:m_window("Rugby Union Tactics", sf::Vector2u(1856, 866+50+10)), m_textbox(sf::Vector2f(1651.f,5.f), sf::Vector2f(200.f, 17*10+10), 100, 14),
+		m_score(0,0), m_turns(NB_TURNS), m_team_red("Red", RED), m_team_blue("Blue", BLUE), m_activeTeam(&m_team_red),
+		m_debug(false) {
 
 		if (!m_texField.loadFromFile("assets/field.png")) {
 			std::cout << "Game - Couldn't load texture from file : FIELD" << std::endl;
@@ -45,6 +52,8 @@ public:
 
 		m_field.setTexture(m_texField);
 
+		m_buttons.push_back(ClickButton(sf::Vector2i(5, 871), sf::Vector2i(150, 50), "End turn"));
+		m_buttons.back().addCallback(&Game::handleEndTurn, this);
 	}
 
 	~Game() {}
@@ -93,6 +102,10 @@ public:
 		m_window.clear();
 
 		m_window.draw(m_field);
+
+		for (auto & it : m_buttons)
+			it.draw(m_window);
+
 		m_textbox.draw(m_window);
 		m_team_red.draw(m_window);
 		m_team_blue.draw(m_window);
@@ -127,11 +140,26 @@ public:
 	void handleMouseClick(EventDetails * details = nullptr) {
 		sf::Vector2i w_pos = details->m_mouse;
 		sf::Vector2u t_pos = screenToGrid(sf::Vector2f(w_pos));
-		m_textbox.addDebugMessage("Click on (" + std::to_string(w_pos.x) + "," + std::to_string(w_pos.y) + ")");
-		m_textbox.addDebugMessage("Tile : (" + std::to_string(t_pos.x) + "," + std::to_string(t_pos.y) + ")");
+
+		for (auto & it : m_buttons)
+			it.handleClick(w_pos);
 
 		// Do something
+		if (m_activeTeam->selectPlayer(t_pos)) {
+
+		}
+		else {
+			
+		}
 	}
 
+	void handleEndTurn() {
+		m_textbox.addDebugMessage("End of turn, switch team");
+
+		if (m_activeTeam == &m_team_red)
+			m_activeTeam = &m_team_blue;
+		else
+			m_activeTeam = &m_team_red;
+	}
 	////////////////////////////////////////////////////////
 };

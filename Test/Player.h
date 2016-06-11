@@ -72,6 +72,21 @@ public:
 
 	~Player() {}
 
+	void select(bool b = true) {
+		m_isSelected = b;
+
+		if (b) {
+			m_jersey.setColor(sf::Color::Green);
+		}
+		else {
+			m_jersey.setColor(sf::Color::White);
+		}
+	}
+
+	sf::Vector2u getPosition() {
+		return m_position;
+	}
+
 	void draw(GraphicWindow & window) {
 		window.draw(m_sprite);
 		m_jersey.setFont(m_font);
